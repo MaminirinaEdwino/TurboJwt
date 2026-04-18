@@ -54,7 +54,11 @@ func Encode(secret string, payload map[string]interface{}, exp float64, nbf floa
 }
 
 // Verify return the payload by using the secret string and the token
-func Verify(secret string, token string) (map[string]any, error) {
+// secret : the secret key 
+// token : the hashed token
+// leeway : delay if > 0 == you have a delay 
+// if = 0, no delay
+func Verify(secret string, token string, leeway float64) (map[string]any, error) {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
 		return nil, fmt.Errorf("Invalide Token")
@@ -78,12 +82,22 @@ func Verify(secret string, token string) (map[string]any, error) {
 	if time.Now().Unix() > int64(exp) {
 		return nil, fmt.Errorf("Expired Token")
 	}
+	now := time.Now().Unix()
+	leewaySec := int64(time.Duration(leeway).Seconds())
+
+	if exp, ok := payload["exp"].(float64); ok {
+		if now > (int64(exp)+ leewaySec) {
+			return nil, fmt.Errorf("Expired token")
+		}
+	}
+
+
 	if val, ok := payload["nbf"]; ok {
 		nbf, ok := val.(float64)
 		if !ok {
 			return nil, fmt.Errorf("Token not yet active")
 		}
-		if time.Now().Unix() < int64(nbf) {
+		if time.Now().Unix() < (int64(nbf)- leewaySec) {
 			return nil, fmt.Errorf("Inactive token")
 		}
 	}
