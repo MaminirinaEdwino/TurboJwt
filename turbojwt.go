@@ -49,5 +49,5 @@ func Verify(secret string, token string) (bool, error) {
 	if hmac.Equal([]byte(signature), []byte(parts[2])) {
 		return true, nil
 	}
-	return true, nil
+	return false, fmt.Errorf("Invalide signature.")
 }
