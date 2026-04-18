@@ -27,7 +27,7 @@ func generateHmac(secret string, unsignedToken string) string {
 // exp : the token duration
 // nbf : 0 if don't want to use it
 // nbf > if you want to use not before a duration
-func Encode(secret string, payload map[string]interface{}, exp float64, nbf int) (string, error) {
+func Encode(secret string, payload map[string]interface{}, exp float64, nbf float64) (string, error) {
 	header := map[string]string{
 		"alg": "HS256",
 		"typ": "JWT",
