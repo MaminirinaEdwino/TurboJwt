@@ -24,13 +24,23 @@ func generateHmac(secret string, unsignedToken string) string {
 }
 
 // Encode generate jwt token by using the secret and payload variable
-func Encode(secret string, payload map[string]interface{}, exp float64) (string, error) {
+// exp : the token duration
+// nbf : 0 if don't want to use it
+// nbf > if you want to use not before a duration
+func Encode(secret string, payload map[string]interface{}, exp float64, nbf int) (string, error) {
 	header := map[string]string{
 		"alg": "HS256",
 		"typ": "JWT",
 	}
 	expiration := time.Now().Add(time.Hour * time.Duration(exp)).Unix()
+	iat := time.Now().Unix()
+
 	payload["exp"] = expiration
+	payload["iat"] = iat
+	if nbf > 0 {
+		notBefore := time.Now().Add(time.Minute * time.Duration(nbf)).Unix()
+		payload["nbf"] = notBefore
+	}
 	headerJson, _ := json.Marshal(header)
 	encodedHeader := base64Encode(headerJson)
 	payloadJson, _ := json.Marshal(payload)
@@ -67,6 +77,15 @@ func Verify(secret string, token string) (map[string]any, error) {
 	}
 	if time.Now().Unix() > int64(exp) {
 		return nil, fmt.Errorf("Expired Token")
+	}
+	if val, ok := payload["nbf"]; ok {
+		nbf, ok := val.(float64)
+		if !ok {
+			return nil, fmt.Errorf("Token not yet active")
+		}
+		if time.Now().Unix() > int64(nbf) {
+			return nil, fmt.Errorf("Inactive token")
+		}
 	}
 	return payload, nil
 }
