@@ -52,11 +52,10 @@ func Verify(secret string, token string) (map[string]any, error) {
 	if !hmac.Equal([]byte(signature), []byte(parts[2])) {
 		return nil, fmt.Errorf("Invalide signature.")
 	}
-
+	payloadPart, _ := base64.RawURLEncoding.DecodeString(parts[1])
 	var payload map[string]any
-	if err := json.Unmarshal([]byte(parts[1]), &payload); err != nil {
+	if err := json.Unmarshal(payloadPart, &payload); err != nil {
 		return nil, err
 	}
-
 	return payload, nil
 }
