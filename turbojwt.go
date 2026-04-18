@@ -83,7 +83,7 @@ func Verify(secret string, token string) (map[string]any, error) {
 		if !ok {
 			return nil, fmt.Errorf("Token not yet active")
 		}
-		if time.Now().Unix() > int64(nbf) {
+		if time.Now().Unix() < int64(nbf) {
 			return nil, fmt.Errorf("Inactive token")
 		}
 	}
