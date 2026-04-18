@@ -38,18 +38,25 @@ func Encode(secret string, playload map[string]interface{}) (string, error) {
 }
 
 
-
-func Verify(secret string, token string) (bool, error) {
+// Verify return the payload by using the secret string and the token
+func Verify(secret string, token string) (map[string]any, error) {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
-		return false, fmt.Errorf("Invalide Token")
+		return nil, fmt.Errorf("Invalide Token")
 	}
 
 	unsignedPart := parts[0]+"."+parts[1]
 	signature := generateHmac(secret, unsignedPart)
 
-	if hmac.Equal([]byte(signature), []byte(parts[2])) {
-		return true, nil
+
+	if !hmac.Equal([]byte(signature), []byte(parts[2])) {
+		return nil, fmt.Errorf("Invalide signature.")
 	}
-	return false, fmt.Errorf("Invalide signature.")
+
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(parts[1]), &payload); err != nil {
+		return nil, err
+	}
+
+	return payload, nil
 }
