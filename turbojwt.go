@@ -24,8 +24,8 @@ func generateHmac(secret string, unsignedToken string) string {
 }
 
 // Encode generate jwt token by using the secret and payload variable
-// exp : the token duration
-// nbf : 0 if don't want to use it
+// exp(hour) : the token duration
+// nbf(minutes) : 0 if don't want to use it
 // nbf > if you want to use not before a duration
 func Encode(secret string, payload map[string]interface{}, exp float64, nbf float64) (string, error) {
 	header := map[string]string{
@@ -56,7 +56,7 @@ func Encode(secret string, payload map[string]interface{}, exp float64, nbf floa
 // Verify return the payload by using the secret string and the token
 // secret : the secret key 
 // token : the hashed token
-// leeway : delay if > 0 == you have a delay 
+// leeway(second) : delay if > 0 == you have a delay 
 // if = 0, no delay
 func Verify(secret string, token string, leeway float64) (map[string]any, error) {
 	parts := strings.Split(token, ".")
